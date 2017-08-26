@@ -1,0 +1,12 @@
+gevent==1.1.2
+mrq==0.1.18
+lxml
+requests
+schema
+bencode
+pyssdb
+celery
+beautifulsoup4
+nose
+coverage
+#gunicorn 

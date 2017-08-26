@@ -1,0 +1,15 @@
+version: "2.0"
+test:
+  image: daocloud/ci-python:2.7
+  script:
+  - pip install -r requirements.txt
+  - mkdir -p daocloud/testresults
+  - mkdir -p daocloud/codecoverage
+  - nosetests test.py --with-xunit --xunit-file=daocloud/testresults/nosetests.xml
+  - coverage run --branch test.py
+  - coverage xml -o daocloud/codecoverage/coverage.xml test.py
+build:
+  image:
+    dockerfile_path: /Dockerfile
+    build_dir: /
+    cache: true

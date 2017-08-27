@@ -7,12 +7,13 @@ from mrq.job import queue_job
 from mrq.context import log, connections, get_current_job, retry_current_job, abort_current_job, set_current_config, get_current_config
 from mrq.config import get_config
 
+from pykl import pyfile, pyutils
 
-from utils import Config, TaskSchemaWrapper, IPSchema, Regex, And, Use, Optional, run_gdom_page, crc32_mod, get_dict_of_dir
+from utils import TaskSchemaWrapper, IPSchema, Regex, And, run_gdom_page
 
 from mrq.job import queue_raw_jobs, queue_job
 
-CONF = Config(get_config())
+CONF = pyutils.Config(get_config())
 
 CONF_CHECK_PROXY_FUNC = CONF.CONF_CHECK_PROXY_FUNC
 CONF_FETCHQL_PATH = CONF.CONF_FETCHQL_PATH
@@ -78,7 +79,11 @@ class FetchProxy(Task):
         timer_num = 3
         timer_seq = CONF_CHECK_INTERVAL
 
-        proxy_list = run_gdom_page(filename)
+        gql = pyfile.load_str(filename).strip()
+        if not gql:
+            abort_current_job()
+
+        proxy_list = run_gdom_page(gql, get_proxy = lambda :connections.redis.srandmember(CONF_DATA_OK_KEY))
         proxy_list and log.info('FETCH OK filename:%s, num:%d'  % (filename, len(proxy_list)))
 
         timestamp = int(time.time())
@@ -87,12 +92,12 @@ class FetchProxy(Task):
             host = proxy_str.split(':', 1)[0]
             port = int(proxy_str.split(':', 1)[1])
             for t_idx in range(timer_num):
-                next_tick = timestamp + crc32_mod(proxy_str, timer_seq) + t_idx * timer_seq
+                next_tick = timestamp + pyutils.crc32_mod(proxy_str, timer_seq) + t_idx * timer_seq
                 rawparam = '%s#%d#%d#%d' % (host, port, timer_seq, int(next_tick / timer_seq))
                 task_map.setdefault(rawparam, next_tick)
 
         queue_raw_jobs('check_proxy_timed_set', task_map)
-        return proxy_list
+        return {'file': filename, 'num':len(proxy_list), 'gql': gql}
 
 class AddFetchTask(Task):
 
@@ -106,17 +111,17 @@ class AddFetchTask(Task):
         timer_seq = params.get('ts', 60)
         timer_num = params.get('tn', 1)
 
-        file_map = get_dict_of_dir(dirname, filter_func = lambda s: s.endswith('.gql'))
+        file_map = pyfile.get_dict_of_dir(dirname, filter_func = lambda s: s.endswith('.gql'))
         timestamp = int(time.time())
         task_map = {}
         for filename, _ in file_map.items():
             for t_idx in range(timer_num):
-                next_tick = timestamp + crc32_mod(filename, timer_seq) + t_idx * timer_seq
+                next_tick = timestamp + pyutils.crc32_mod(filename, timer_seq) + t_idx * timer_seq
                 rawparam = '%s#%d#%d' % (filename, timer_seq, int(next_tick / timer_seq))
                 task_map.setdefault(rawparam, next_tick)
 
         queue_raw_jobs('fetch_proxy_timed_set', task_map)
-        return file_map.values()
+        return {'num': len(file_map)}
 
 class AddCheckTask(Task):
 
@@ -147,31 +152,17 @@ class AddCheckTask(Task):
             host = proxy_str.split(':', 1)[0]
             port = int(proxy_str.split(':', 1)[1])
             for t_idx in range(timer_num):
-                next_tick = timestamp + crc32_mod(proxy_str, timer_seq) + t_idx * timer_seq
+                next_tick = timestamp + pyutils.crc32_mod(proxy_str, timer_seq) + t_idx * timer_seq
                 rawparam = '%s#%d#%d#%d' % (host, port, timer_seq, int(next_tick / timer_seq))
                 task_map.setdefault(rawparam, next_tick)
 
         queue_raw_jobs('check_proxy_timed_set', task_map)
         return {'num': len(proxy_list), 'total': total}
 
-def get_proxy(ip_file=os.path.join(os.getcwd(), 'ip.txt')):
-    with open(ip_file, 'r') as rf:
-        proxy_list = [i.strip() for i in rf if ':' in i]
-    return proxy_list
-
 def main():
     set_current_config(get_config())
     print "======== START ========="
     add_num = 0
-
-    '''test = CONF_CHECK_PROXY_FUNC('42.202.130.246', 3128)
-    print test
-
-    proxy_list = get_proxy()
-    for proxy in proxy_list:
-        add_num += connections.redis.sadd(CONF_DATA_OK_KEY, proxy)
-        connections.redis.hset(CONF_DATA_RANK_KEY, proxy, 10)'''
-
     print 'all:', add_num
     print "======== END ========="
 

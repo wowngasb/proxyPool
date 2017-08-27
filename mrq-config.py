@@ -89,7 +89,7 @@ SCHEDULER_TASKS += [
             'rkey': CONF_DATA_OK_KEY,
             'max_num': 999999,
             'min_num': 1,
-            'ratio': 1.0,
+            'ratio': 0.3,
             'ts': CONF_CHECK_INTERVAL,
             'tn': 3,
         },
@@ -97,7 +97,6 @@ SCHEDULER_TASKS += [
     }
 ]
 
-# ÿ100�� �������Ч������г�ȡһ������ ��������� ��������
 SCHEDULER_TASKS += [
     {
         'path': 'tasks.AddCheckTask',

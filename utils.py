@@ -1,4 +1,7 @@
 #-*- coding: utf-8 -*-
+import os
+import random
+from pykl import gdom
 import binascii
 import urllib2
 import httplib
@@ -63,26 +66,24 @@ USER_AGENTS = [
     "Mozilla/5.0 (X11; U; Linux x86_64; zh-CN; rv:1.9.2.10) Gecko/20100922 Ubuntu/10.10 (maverick) Firefox/3.6.10"
 ]
 
-class HttpError(Exception):
+class Error(Exception):
     pass
-    
+
+class HttpError(Error):
+    pass
+
 class HttpNetError(HttpError):
     pass
 
-def check_proxy(proxy_info, url, ok_func):
-    try:
-        headers, data = getUrl(url, proxy_info=proxy_info)
-        return ok_func(headers, data)
-    except ALL_ERROR:
-        return False
-        
-def getUrl(url, use_gzip=True, proxy_info=None, timeout=HTTP_TIME_OUT, add_header=ADD_HEADER, random_agent=True):
+
+
+def get_url(url, use_gzip=True, proxy_info=None, timeout=HTTP_TIME_OUT, add_header=ADD_HEADER, random_agent=True):
     url = url.strip()
     if not url:
         return ''
-        
+
     try:
-        return _getUrl(url, use_gzip=use_gzip, proxy_info=proxy_info, timeout=timeout, add_header=add_header, random_agent=random_agent)
+        return _get_url(url, use_gzip=use_gzip, proxy_info=proxy_info, timeout=timeout, add_header=add_header, random_agent=random_agent)
     except urllib2.HTTPError as ex:
         status_code = getattr(ex, 'code', 0)
         error_cls = type('HttpError%d' % (status_code, ), (HttpError, ), {}) if status_code > 0 else HttpError
@@ -99,10 +100,12 @@ def getUrl(url, use_gzip=True, proxy_info=None, timeout=HTTP_TIME_OUT, add_heade
     except ALL_ERROR as ex:
         raise ex
 
-def _getUrl(url, use_gzip, proxy_info, timeout, add_header, random_agent):
+def _get_url(url, use_gzip, proxy_info, timeout, add_header, random_agent):
     if proxy_info:
         p_type = 'https' if  isinstance(proxy_info, (tuple, list)) and len(proxy_info)>=3 and proxy_info[2] == 'https' else 'http'
-        proxy_support = urllib2.ProxyHandler({p_type : p_type + "://" + ("%s:%d" % proxy_info[:2] if  isinstance(proxy_info, (tuple, list)) and len(proxy_info)>=3 else str(proxy_info))})
+        p_host = "%s:%d" % proxy_info[:2] if  isinstance(proxy_info, (tuple, list)) and len(proxy_info)>=2 else str(proxy_info)
+        p_value = {p_type : p_type + "://" + p_host}
+        proxy_support = urllib2.ProxyHandler(p_value)
         opener = urllib2.build_opener(proxy_support)
         urllib2.install_opener(opener)
 
@@ -126,8 +129,8 @@ def _getUrl(url, use_gzip, proxy_info, timeout, add_header, random_agent):
             raise ex
         except ALL_ERROR:
             if use_gzip:
-                return _getUrl(url, use_gzip=False, timeout=timeout, proxy_info=proxy_info, random_agent=random_agent)
-                
+                return _get_url(url, use_gzip=False, timeout=timeout, proxy_info=proxy_info, random_agent=random_agent)
+
     return headers, data
 
 
@@ -190,9 +193,16 @@ def ApiErrorBuild(msg='something is error', code=None, errors=None):
         err['errors'] = [ApiErrorBuild(item) for item in errors]
     return {'error': err}
 
-def run_gdom_page(sql_file):
-    return {}
 
+
+def run_gdom_page(gql_file):
+    with open(gql_file, 'r') as rf:
+        gql = rf.read()
+
+    tmp = gdom.schema.execute(gql)
+    page_data = tmp.data.get('page', {}) if tmp.data else {}
+    proxy_list = page_data.get('items', []) if page_data else []
+    return [i['proxy'] for i in proxy_list if i.get('proxy', '')]
 
 crc32_mod = lambda strin, num: (binascii.crc32(strin) & 0xffffffff) % num
 
@@ -215,3 +225,30 @@ def get_dict_of_dir(str_dir, filter_func=None):
                 all_files.setdefault(n_full_name, n_file_name)
 
     return all_files
+
+def check_proxy(url, proxy_info, ok_func):
+    try:
+        headers, data = get_url(url, proxy_info=proxy_info)
+        return ok_func(headers, data)
+    except ALL_ERROR as ex:
+        return False
+
+def singleton(cls):
+    instances = {}
+    def _singleton(*args, **kwds):
+        if cls not in instances:
+            instances[cls] = cls(*args, **kwds)
+        return instances[cls]
+    return _singleton
+
+@singleton
+class Config(object):
+    def __init__(self, dict_in, **kwds):
+        self.__dict__.update(dict_in)
+        self.__dict__.update(kwds)
+
+    def __getattr__(self, name):
+        return self.__dict__.get(name.lower(), '')
+
+    def __str__(self):
+        return str(self.__dict__)

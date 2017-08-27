@@ -1,5 +1,6 @@
 #-*- coding: utf-8 -*-
-
+import requests
+import pykl
 import time
 import os
 import json
@@ -19,7 +20,10 @@ CONF_DATA_ALL_KEY = 'proxy_all_set'
 CONF_DATA_RANK_KEY = 'proxy_rank_hash'
 CONF_CHECK_INTERVAL = 60
 
-CONF_CHECK_PROXY_FUNC = lambda host, port: check_proxy('http://ip.chinaz.com/getip.aspx', (host, port), lambda headers, data: json.loads(data).get('ip', '')==host)
+_json = lambda s: pykl.pyjson.loads(s, evaluation=lambda s:s, strictkey=False)
+_this_ip = _json(requests.get('http://ip.chinaz.com/getip.aspx').content).get('ip', '')
+
+CONF_CHECK_PROXY_FUNC = lambda host, port: check_proxy('http://ip.chinaz.com/getip.aspx', (host, port), lambda headers, data: _json(data).get('ip', '')==host or _json(data).get('ip', '')==_this_ip)
 
 PARAMS_CHECK_PROXY = lambda rawparam: {k:v for (k, v) in [ \
     ('t', int(time.time())), \
@@ -66,7 +70,6 @@ RAW_QUEUES.update({
     },
 })
 
-# Ã¿·ÖÖÓ¼ì²éCONF_FETCHQL_PATHÄ¿Â¼ÏÂµÄ²éÑ¯ÎÄ¼þ »ñÈ¡Ç±ÔÚ´úÀíÁÐ±í
 SCHEDULER_TASKS += [
     {
         'path': 'tasks.AddFetchTask',
@@ -75,11 +78,10 @@ SCHEDULER_TASKS += [
             'ts': 600,
             'tn': 1,
         },
-        'interval': 60,
+        'interval': 30,
     }
 ]
 
-# Ã¿ÈýÊ®Ãë¼ì²é ÓÐÐ§´úÀíÁÐ±í °Ñ´úÀíÌí¼ÓÖÁ ´ý¼ì²é¶ÓÁÐ
 SCHEDULER_TASKS += [
     {
         'path': 'tasks.AddCheckTask',
@@ -95,7 +97,7 @@ SCHEDULER_TASKS += [
     }
 ]
 
-# Ã¿100Ãë Ëæ»úÔÚÎÞÐ§´úÀí³ØÖÐ³éÈ¡Ò»¶¨ÊýÁ¿ ´úÀíÌí¼ÓÖÁ ´ý¼ì²é¶ÓÁÐ
+# Ã¿100ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð³ï¿½È¡Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 SCHEDULER_TASKS += [
     {
         'path': 'tasks.AddCheckTask',

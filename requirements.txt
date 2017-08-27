@@ -9,4 +9,5 @@ celery
 beautifulsoup4
 nose
 coverage
+pykl
 #gunicorn 

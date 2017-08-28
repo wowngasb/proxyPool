@@ -22,7 +22,7 @@ CONF_DATA_ALL_KEY = CONF.CONF_DATA_ALL_KEY
 CONF_DATA_RANK_KEY = CONF.CONF_DATA_RANK_KEY
 CONF_CHECK_INTERVAL = CONF.CONF_CHECK_INTERVAL
 
-_check_t = lambda p: p.get('ts', 0) * p.get('ti', 0) + 1 < int(time.time()) - p.get('ts', 0)
+_check_t = lambda p: p.get('ts', 0) * p.get('ti', 0) < int(time.time()) - 2 * p.get('ts', 0)
 
 class CheckProxy(Task):
 
@@ -61,6 +61,7 @@ class CheckProxy(Task):
             connections.redis.sadd(CONF_DATA_OK_KEY, hkey)
         else:
             connections.redis.srem(CONF_DATA_OK_KEY, hkey)
+            now_num <= -10 and connections.redis.srem(CONF_DATA_ALL_KEY, hkey)
         return {'proxy': hkey, 'num': now_num, 'test': test}
 
 class FetchProxy(Task):

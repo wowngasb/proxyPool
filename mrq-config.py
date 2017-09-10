@@ -103,9 +103,9 @@ SCHEDULER_TASKS += [
         'path': 'tasks.AddCheckTask',
         'params': {
             'rkey': CONF_DATA_ALL_KEY,
-            'max_num': 100,
-            'min_num': 10,
-            'ratio': 0.1,
+            'max_num': 1000,
+            'min_num': 100,
+            'ratio': 0.3,
             'ts': CONF_CHECK_INTERVAL,
             'tn': 1,
         },

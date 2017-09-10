@@ -80,7 +80,7 @@ def run_gdom_page(gql, get_proxy=None):
         host, port = (tmp_proxy[0], pyutils.try_int(tmp_proxy[1])) if len(tmp_proxy)==2 else ('', 0)
         if pyutils.is_ipv4(host) and 0 < port < 65536:
             ret_list.append( '%s:%d' % (host, port) )
-    return ret_list
+    return ret_list, gret
 
 def check_proxy(url, proxy_info, ok_func):
     try:

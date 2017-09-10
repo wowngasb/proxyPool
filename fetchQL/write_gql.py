@@ -26,6 +26,7 @@ def _do_map(url_map, query, path, max_page, ext):
 
     return add_num
 
+
 def do_kuaidaili(max_page=20, path='kuaidaili', ext='.gql'):
     url_map = {
         u'国内高匿代理': {
@@ -39,11 +40,12 @@ def do_kuaidaili(max_page=20, path='kuaidaili', ext='.gql'):
     }
 
     query = '''
-    items: query(selector: "table.table-bordered.table-striped tbody tr") {
+    items: query(selector: "tr", filter:"lambda el: len(el.children('td'))>=2 and el.children('td')[1].text.isalnum()") {
       proxy: call(selector: "td", func:"lambda el: el[0].text() + ':' + el[1].text()"),
     }
 '''
     return _do_map(url_map, query, path, max_page, ext)
+
 
 def do_66ip(max_page=20, path='66ip', ext='.gql'):
     url_map = {
@@ -53,7 +55,7 @@ def do_66ip(max_page=20, path='66ip', ext='.gql'):
         },
     }
     query = '''
-    items: query(selector: "tr") {
+    items: query(selector: "tr", filter:"lambda el: len(el.children('td'))>=2 and el.children('td')[1].text.isalnum()") {
       proxy: call(selector: "td", func:"lambda el: el[0].text()+':'+el[1].text() if len(el)>=2 else ''"),
     }
 '''
@@ -79,7 +81,7 @@ def do_mimiip(max_page=20, path='mimiip', ext='.gql'):
         },
     }
     query = '''
-    items: query(selector: "tr") {
+    items: query(selector: "tr", filter:"lambda el: len(el.children('td'))>=2 and el.children('td')[1].text.isalnum()") {
       proxy: call(selector: "td", func:"lambda el: el[0].text()+':'+el[1].text() if len(el)>=2 else ''"),
     }
 '''
@@ -93,7 +95,7 @@ def do_ip181(max_page=20, path='ip181', ext='.gql'):
         },
     }
     query = '''
-    items: query(selector: "tr") {
+    items: query(selector: "tr", filter:"lambda el: len(el.children('td'))>=2 and el.children('td')[1].text.isalnum()") {
       proxy: call(selector: "td", func:"lambda el: el[0].text()+':'+el[1].text() if len(el)>=2 else ''"),
     }
 '''
@@ -119,7 +121,7 @@ def do_xicidaili(max_page=20, path='xicidaili', ext='.gql'):
         },
     }
     query = '''
-    items: query(selector: "tr") {
+    items: query(selector: "tr", filter:"lambda el: len(el.children('td'))>=3 and el.children('td')[2].text.isalnum()") {
       proxy: call(selector: "td", func:"lambda el: el[1].text()+':'+el[2].text() if len(el)>=3 else ''"),
     }
 '''
@@ -131,7 +133,7 @@ def main():
     [os.remove(f) for f, _ in last_map.items()]
     add_num = 0
 
-    add_num += do_kuaidaili(10)
+    # add_num += do_kuaidaili(10)
     add_num += do_66ip(40)
     add_num += do_mimiip(40)
     add_num += do_ip181(40)

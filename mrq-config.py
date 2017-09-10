@@ -113,6 +113,23 @@ SCHEDULER_TASKS += [
     }
 ]
 
+
+SCHEDULER_TASKS += [
+    {
+        'path': 'tasks.ReCheckTask',
+        'params': {
+            'hkey': CONF_DATA_RANK_KEY,
+            'max_num': 100,
+            'min_num': 10,
+            'ratio': 0.1,
+            'ts': CONF_CHECK_INTERVAL,
+            'tn': 1,
+        },
+        'interval': 300,
+    }
+]
+
+
 SCHEDULER_INTERVAL = 1
 
 ##################################
@@ -144,13 +161,6 @@ SCHEDULER_TASKS += [
   # This can happen only when the worker is killed brutally in the middle of dequeue_jobs()
   {
     'path': 'mrq.basetasks.cleaning.RequeueLostJobs',
-    'params': {},
-    'interval': 24 * 3600
-  },
-  # This will clean the list of known queues in Redis. It will mostly remove empty queues
-  # so that they are not displayed in the dashboard anymore.
-  {
-    'path': 'mrq.basetasks.cleaning.CleanKnownQueues',
     'params': {},
     'interval': 24 * 3600
   }

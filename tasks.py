@@ -84,8 +84,10 @@ class FetchProxy(Task):
         if not gql:
             abort_current_job()
 
-        proxy_list = run_gdom_page(gql, get_proxy = lambda :connections.redis.srandmember(CONF_DATA_OK_KEY))
+        proxy_list, gret = run_gdom_page(gql, get_proxy = lambda :connections.redis.srandmember(CONF_DATA_OK_KEY))
         proxy_list and log.info('FETCH OK filename:%s, num:%d'  % (filename, len(proxy_list)))
+        if gret.errors:
+            log.error('FETCH ERROR filename:%s, errors:%s'  % (filename, gret.errors))
 
         timestamp = int(time.time())
         task_map = {}
@@ -98,7 +100,7 @@ class FetchProxy(Task):
                 task_map.setdefault(rawparam, next_tick)
 
         queue_raw_jobs('check_proxy_timed_set', task_map)
-        return {'file': filename, 'num':len(proxy_list), 'gql': gql}
+        return {'file': filename, 'num':len(proxy_list), 'proxy_list': proxy_list}
 
 class AddFetchTask(Task):
 
@@ -160,10 +162,51 @@ class AddCheckTask(Task):
         queue_raw_jobs('check_proxy_timed_set', task_map)
         return {'num': len(proxy_list), 'total': total}
 
+class ReCheckTask(Task):
+
+    @TaskSchemaWrapper({
+        'hkey': And(basestring, len),
+        'max_num': And(int, lambda n: n >= 0),
+        'min_num': And(int, lambda n: n >= 0),
+        'ratio': And(float, lambda f: 0 <= f <= 1),
+        'ts': And(int, lambda n: n >= 0),
+        'tn': And(int, lambda n: n >= 0),
+    }, ignore_extra_keys=True)
+    def run(self, params):
+        hkey = params.get('hkey', '').strip()
+        max_num = params.get('max_num', 100)
+        min_num = params.get('min_num', 1)
+        ratio = params.get('ratio', 0.1)
+        timer_seq = params.get('ts', 60)
+        timer_num = params.get('tn', 1)
+
+        total = connections.redis.hlen(hkey)
+        num = int(round(total * ratio))
+        num = num if min_num <= num <= max_num else (max_num if num > max_num else min_num)
+
+        drop_list = [k for k, v in connections.redis.hscan_iter(hkey, count=100) if int(v) <= -10]
+        retry_list = random.sample(drop_list, num)
+        timestamp = int(time.time())
+        task_map = {}
+        for proxy_str in retry_list:
+            host = proxy_str.split(':', 1)[0]
+            port = int(proxy_str.split(':', 1)[1])
+            for t_idx in range(timer_num):
+                next_tick = timestamp + pyutils.crc32_mod(proxy_str, timer_seq) + t_idx * timer_seq
+                rawparam = '%s#%d#%d#%d' % (host, port, timer_seq, int(next_tick / timer_seq))
+                task_map.setdefault(rawparam, next_tick)
+
+        queue_raw_jobs('check_proxy_timed_set', task_map)
+        return {'num': len(retry_list), 'total': total}
+
+
 def main():
     set_current_config(get_config())
     print "======== START ========="
     add_num = 0
+
+    queue_raw_jobs('check_proxy_timed_set', task_map)
+
     print 'all:', add_num
     print "======== END ========="
 

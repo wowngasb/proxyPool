@@ -9,5 +9,6 @@ celery
 beautifulsoup4
 nose
 coverage
+graphene==1.4.1
 pykl
 #gunicorn 

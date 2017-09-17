@@ -7,4 +7,4 @@ COPY . /usr/src/app
 
 RUN pip install -r requirements.txt
 
-CMD [ "python", "mrqworker.py", "--scheduler", "--greenlets", "40", "default", "fetch_proxy_timed_set", "check_proxy_timed_set"]
+CMD [ "python", "mrqworker.py", "--scheduler", "--greenlets", "80", "default", "fetch_proxy_timed_set", "check_proxy_timed_set"]

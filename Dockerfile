@@ -7,6 +7,6 @@ COPY . /usr/src/app
 
 RUN pip install -r requirements.txt
 
-RUN python /usr/src/app/write_gql.py
+RUN python /usr/src/app/fetchQL/write_gql.py
 
 CMD [ "python", "mrqworker.py", "--scheduler", "--greenlets", "80", "default", "fetch_proxy_timed_set", "check_proxy_timed_set"]

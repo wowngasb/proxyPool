@@ -20,7 +20,7 @@ def _do_map(url_map, query, path, max_page, ext):
             url = v['url'].format(idx=idx)
             filename = _pwd( v['file'].format(idx=idx) )
             gql = _gql_tpl(url)
-            print pyutils._t(), '[INFO] name:', k, 'idx:', idx, 'file:', filename, 'url', url
+            print pyutils._t(), '[INFO] idx:', idx, 'file:', filename, 'url', url
             pyfile.dump_str(gql, filename + ext)
             add_num += 1
 

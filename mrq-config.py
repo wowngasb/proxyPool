@@ -119,13 +119,13 @@ SCHEDULER_TASKS += [
         'path': 'tasks.ReCheckTask',
         'params': {
             'hkey': CONF_DATA_RANK_KEY,
-            'max_num': 100,
+            'max_num': 1000,
             'min_num': 10,
             'ratio': 0.1,
             'ts': CONF_CHECK_INTERVAL,
             'tn': 1,
         },
-        'interval': 300,
+        'interval': 60,
     }
 ]
 

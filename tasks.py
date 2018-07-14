@@ -1,6 +1,7 @@
 #-*- coding: utf-8 -*-
 import os
 import time
+import math
 import random
 from mrq.task import Task
 from mrq.job import queue_job
@@ -115,11 +116,12 @@ class AddFetchTask(Task):
         timer_num = params.get('tn', 1)
 
         file_map = pyfile.get_dict_of_dir(dirname, filter_func = lambda s: s.endswith('.gql'))
+        f_seq = math.ceil(len(file_map) / 100)
         timestamp = int(time.time())
         task_map = {}
         for filename, _ in file_map.items():
             for t_idx in range(timer_num):
-                next_tick = timestamp + pyutils.crc32_mod(filename, timer_seq) + t_idx * timer_seq
+                next_tick = timestamp + pyutils.crc32_mod(filename, timer_seq * f_seq) + t_idx * timer_seq
                 rawparam = '%s#%d#%d' % (filename, timer_seq, int(next_tick / timer_seq))
                 task_map.setdefault(rawparam, next_tick)
 

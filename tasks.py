@@ -119,9 +119,11 @@ class AddFetchTask(Task):
         f_seq = math.ceil(len(file_map) / 100)
         timestamp = int(time.time())
         task_map = {}
+
+        timer_seq = timer_seq * f_seq
         for filename, _ in file_map.items():
             for t_idx in range(timer_num):
-                next_tick = timestamp + pyutils.crc32_mod(filename, timer_seq * f_seq) + t_idx * timer_seq
+                next_tick = timestamp + pyutils.crc32_mod(filename, timer_seq) + t_idx * timer_seq
                 rawparam = '%s#%d#%d' % (filename, timer_seq, int(next_tick / timer_seq))
                 task_map.setdefault(rawparam, next_tick)
 

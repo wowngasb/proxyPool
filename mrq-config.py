@@ -22,7 +22,7 @@ CONF_CHECK_INTERVAL = 60
 
 _json = lambda s: pykl.pyjson.loads(s, evaluation=lambda s:s, strictkey=False)
 _this_ip = _json(requests.get('http://ip.chinaz.com/getip.aspx').content).get('ip', '')
-_this_ip = 'xxx'
+# _this_ip = 'xxx'
 
 CONF_CHECK_PROXY_FUNC = lambda host, port: check_proxy('http://ip.chinaz.com/getip.aspx', (host, port), lambda headers, data: _json(data).get('ip', '')==host or _json(data).get('ip', '')==_this_ip)
 
@@ -119,7 +119,7 @@ SCHEDULER_TASKS += [
         'path': 'tasks.ReCheckTask',
         'params': {
             'hkey': CONF_DATA_RANK_KEY,
-            'max_num': 1000,
+            'max_num': 100,
             'min_num': 10,
             'ratio': 0.1,
             'ts': CONF_CHECK_INTERVAL,

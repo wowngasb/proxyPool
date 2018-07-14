@@ -8,6 +8,7 @@ from flask import request
 from mrq.dashboard.utils import jsonify
 from mrq.task import Task
 from functools import update_wrapper
+from urlparse import urlparse, parse_qs
 
 HttpUrlSchema = And(basestring, len, Regex(r'^(http|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?$'))
 IPSchema = And(basestring, len, Regex(r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'))

@@ -2,11 +2,11 @@
 import os
 import re
 from pyquery import PyQuery as pq
-from pykl import gdom, pyhttp, pyutils
+from pykl import gdom, pyhttp, pyutils, pyfile
 from schema import Schema, SchemaError, Regex, And, Use, Optional
 from flask import request
 from mrq.dashboard.utils import jsonify
-from mrq.task import Task
+
 from functools import update_wrapper
 from urlparse import urlparse, parse_qs
 
@@ -19,20 +19,6 @@ def TaskSchemaWrapper(*args, **kwgs):
         func.params_schema = schema
         return func
     return _wrapper
-
-def fixTaskParams(all_dict, task, args):
-    cls = all_dict.get(task, None)
-    if not cls or not issubclass(cls, Task):
-        return None, ApiErrorBuild('task:%s is not allowed' % (task,), 531)
-    schema = getattr(cls.run, 'params_schema', None)
-    ex = None
-    if not schema:
-        return  args, ex
-    else:
-        try:
-            return schema.validate(args), ex
-        except SchemaError as ex:
-            return None, ApiErrorBuild('%s:%s' % (ex.__class__.__name__, ex), 511)
 
 def ApiSchemaWrapper(*args, **kwgs):
     schema = Schema(*args, **kwgs)
@@ -108,3 +94,24 @@ def check_proxy(url, proxy_info, ok_func):
         return ok_func(headers, data)
     except pyhttp.ALL_ERROR as ex:
         return False
+
+def main():
+    filename = r'D:\github\proxyPool\fetchQL\mimiip\mimiip_gngao_528.gql'
+    gql = pyfile.load_str(filename).strip()
+    if not gql:
+        return
+
+    proxy_list, gret = run_gdom_page(gql)
+    print 'FETCH OK filename:%s, num:%d'  % (filename, len(proxy_list))
+    if gret.errors:
+        print 'FETCH ERROR filename:%s, errors:%s'  % (filename, gret.errors)
+
+
+    print "======== START ========="
+    add_num = 0
+
+    print 'all:', add_num
+    print "======== END ========="
+
+if __name__ == '__main__':
+    main()

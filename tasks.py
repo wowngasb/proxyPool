@@ -92,6 +92,10 @@ class FetchProxy(Task):
         if gret.errors:
             log.error('FETCH ERROR filename:%s, errors:%s'  % (filename, gret.errors))
 
+        if not proxy_list:
+            log.error('FETCH EMPTY filename:%s, gret:%r'  % (filename, gret))
+            abort_current_job()
+
         timestamp = int(time.time())
         task_map = {}
         for proxy_str in proxy_list:
@@ -210,8 +214,6 @@ def main():
     set_current_config(get_config())
     print "======== START ========="
     add_num = 0
-
-    queue_raw_jobs('check_proxy_timed_set', task_map)
 
     print 'all:', add_num
     print "======== END ========="

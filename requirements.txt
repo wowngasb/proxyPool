@@ -1,6 +1,7 @@
 graphql-core==1.1
+graphene==1.4.1
 gevent==1.1.2
-mrq==0.1.18
+mrq
 lxml
 requests
 schema
@@ -10,6 +11,4 @@ celery
 beautifulsoup4
 nose
 coverage
-graphene==1.4.1
 pykl
-#gunicorn 

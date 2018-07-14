@@ -41,7 +41,7 @@ def do_kuaidaili(max_page=20, path='kuaidaili', ext='.gql'):
     }
 
     query = '''
-    items: query(selector: "tr", filter:"lambda el: len(el.children('td'))>=2 and '.' in el.children('td')[0].text and el.children('td')[1].text.isalnum()") {
+    items: query(selector: "tr", filter:"lambda el: el.children('td') and len(el.children('td'))>=2 and '.' in el.children('td')[0].text and el.children('td')[1].text.isalnum()") {
       proxy: call(selector: "td", func:"lambda el: el[0].text() + ':' + el[1].text()"),
     }
 '''
@@ -57,7 +57,7 @@ def do_66ip(path='66ip', ext='.gql'):
         },
     }
     query = '''
-    items: query(selector: "tr", filter:"lambda el: len(el.children('td'))>=2 and '.' in el.children('td')[0].text and el.children('td')[1].text.isalnum()") {
+    items: query(selector: "tr", filter:"lambda el: el.children('td') and el.children('td') and len(el.children('td'))>=2 and '.' in el.children('td')[0].text and el.children('td')[1].text.isalnum()") {
       proxy: call(selector: "td", func:"lambda el: el[0].text()+':'+el[1].text() if len(el)>=2 else ''"),
     }
 '''
@@ -87,7 +87,7 @@ def do_mimiip(path='mimiip', ext='.gql'):
         },
     }
     query = '''
-    items: query(selector: "tr", filter:"lambda el: len(el.children('td'))>=2 and '.' in el.children('td')[0].text and el.children('td')[1].text.isalnum()") {
+    items: query(selector: "tr", filter:"lambda el: el.children('td') and len(el.children('td'))>=2 and '.' in el.children('td')[0].text and el.children('td')[1].text.isalnum()") {
       proxy: call(selector: "td", func:"lambda el: el[0].text()+':'+el[1].text() if len(el)>=2 else ''"),
     }
 '''
@@ -102,7 +102,7 @@ def do_ip181(path='ip181', ext='.gql'):
         },
     }
     query = '''
-    items: query(selector: "tr", filter:"lambda el: len(el.children('td'))>=2 and '.' in el.children('td')[0].text and el.children('td')[1].text.isalnum()") {
+    items: query(selector: "tr", filter:"lambda el: el.children('td') and len(el.children('td'))>=2 and '.' in el.children('td')[0].text and el.children('td')[1].text.isalnum()") {
       proxy: call(selector: "td", func:"lambda el: el[0].text()+':'+el[1].text() if len(el)>=2 else ''"),
     }
 '''
@@ -132,7 +132,7 @@ def do_xicidaili(path='xicidaili', ext='.gql'):
         },
     }
     query = '''
-    items: query(selector: "tr", filter:"lambda el: len(el.children('td'))>=3 and '.' in el.children('td')[1].text and el.children('td')[2].text.isalnum()") {
+    items: query(selector: "tr", filter:"lambda el: el.children('td') and len(el.children('td'))>=3 and '.' in el.children('td')[1].text and el.children('td')[2].text.isalnum()") {
       proxy: call(selector: "td", func:"lambda el: el[1].text()+':'+el[2].text() if len(el)>=3 else ''"),
     }
 '''

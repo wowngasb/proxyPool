@@ -44,6 +44,8 @@ class CheckProxy(Task):
         connections.redis.sadd(CONF_DATA_ALL_KEY, hkey)
         tmp = connections.redis.hget(CONF_DATA_RANK_KEY, hkey)
         now_num = int(tmp) if tmp else 0
+        if not now_num:
+	        connections.redis.hincrby(CONF_DATA_RANK_KEY, hkey, 1)
         test = CONF_CHECK_PROXY_FUNC(host, port)
         test and log.info('CHECK OK proxy:%s, num:%d'  % (hkey, now_num))
         if test:

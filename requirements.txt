@@ -1,3 +1,4 @@
+graphql-core==1.1
 gevent==1.1.2
 mrq==0.1.18
 lxml

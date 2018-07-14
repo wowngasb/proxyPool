@@ -4,7 +4,7 @@ import datetime
 
 from pykl import pyfile, pyutils
 
-def _do_map(url_map, query, path, max_page, ext):
+def _do_map(url_map, query, path, max_page, ext, start_page=1):
     save_dir = os.path.join(os.getcwd(), path)
     if not os.path.isdir(save_dir):
         os.makedirs(save_dir)
@@ -16,7 +16,7 @@ def _do_map(url_map, query, path, max_page, ext):
 
     add_num = 0
     for k, v in url_map.items():
-        for idx in range(1, max_page + 1):
+        for idx in range(start_page, max_page + start_page):
             url = v['url'].format(idx=idx)
             filename = _pwd( v['file'].format(idx=idx) )
             gql = _gql_tpl(url)
@@ -44,7 +44,7 @@ def do_kuaidaili(max_page=20, path='kuaidaili', ext='.gql'):
       proxy: call(selector: "td", func:"lambda el: el[0].text() + ':' + el[1].text()"),
     }
 '''
-    return _do_map(url_map, query, path, max_page, ext)
+    return _do_map(url_map, query, path, max_page, ext, 9)
 
 
 def do_66ip(max_page=20, path='66ip', ext='.gql'):
@@ -90,7 +90,7 @@ def do_mimiip(max_page=20, path='mimiip', ext='.gql'):
 def do_ip181(max_page=20, path='ip181', ext='.gql'):
     url_map = {
         u'每日免费代理ip': {
-            'url': 'http://www.ip181.com/daili/{idx}.html',
+            'url': 'http://www.ip181.com/daili/{idx}.html?json_to_html=1',
             'file': 'ip181_daili_{idx}',
         },
     }

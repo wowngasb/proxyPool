@@ -61,12 +61,31 @@ def ApiErrorBuild(msg='something is error', code=None, errors=None):
         err['errors'] = [ApiErrorBuild(item) for item in errors]
     return {'error': err}
 
+def json_to_html(td_list):
+    ret_html = ''
+    for item in td_list:
+        ip, port, position = item
+        ret_html += "<tr>\n\t<td>%s</td>\n\t<td>%s</td>\n\t<td>%s</td>\n</tr>\n" % (ip, port, position)
+    return ret_html
+
 def run_gdom_page(gql, get_proxy=None):
     def _fix_gdom_pq():
         def _get_page(page_url):
             http = pyhttp.MultiHttpDownLoad(spawn_num=1, error_max=5, get_proxy=get_proxy)
             data, headers = http._get_data(page_url, isok_func=lambda d, h: len(d) > 1000, use_gzip=True)
+
+            u = urlparse(page_url)
+            if u.query and 'json_to_html' in parse_qs(u.query, True):
+                json_data = json.loads(data)
+                f_map = {
+                    'http://www.ip181.com': lambda s: [(i.get("ip", ''), i.get("port", ''), i.get("position", '')) for i in s.get('RESULT', [])]
+                }
+                for tag, func in f_map.items():
+                    if page_url.startswith(tag):
+                        data = json_to_html(func(json_data))
+                        break
             return pq(data)
+
         gdom.HookProxy.set_get_page(_get_page)
 
     _fix_gdom_pq()

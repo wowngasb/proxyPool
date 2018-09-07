@@ -21,10 +21,10 @@ CONF_DATA_RANK_KEY = 'proxy_rank_hash'
 CONF_CHECK_INTERVAL = 60
 
 _json = lambda s: pykl.pyjson.loads(s, evaluation=lambda s:s, strictkey=False)
-_this_ip = _json(requests.get('http://ip.chinaz.com/getip.aspx').content).get('ip', '')
+_this_ip = _json(requests.get('http://www.fibphp.org/ip.php').content).get('ip', '')
 # _this_ip = 'xxx'
 
-CONF_CHECK_PROXY_FUNC = lambda host, port: check_proxy('http://ip.chinaz.com/getip.aspx', (host, port), lambda headers, data: _json(data).get('ip', '')==host or _json(data).get('ip', '')==_this_ip)
+CONF_CHECK_PROXY_FUNC = lambda host, port: check_proxy('http://www.fibphp.org/ip.php', (host, port), lambda headers, data: _json(data).get('ip', '')==host or _json(data).get('ip', '')==_this_ip)
 
 PARAMS_CHECK_PROXY = lambda rawparam: {k:v for (k, v) in [ \
     ('t', int(time.time())), \
